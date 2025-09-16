@@ -8,8 +8,11 @@ class LRU : public BaseReplacementPolicy {
         uint64_t lastAccessTime;
         LRUData() : lastAccessTime(0) {} // 0 means invalid
     };
+    uint64_t timer;
 
   public:
+    LRU() : timer(0) {}
+
     void invalidate(BaseReplacementData *replacementData) override;
     void insert(BaseReplacementData *replacementData) override;
     void access(BaseReplacementData *replacementData) override;

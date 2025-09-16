@@ -14,7 +14,6 @@
 uint64_t currentTime = 0;
 
 int main(int argc, char *argv[]) {
-    LRU lru = LRU();
     Quadage quadage = Quadage();
     QuadageV2 quadageV2 = QuadageV2();
     QuadageNotify quadageNotify = QuadageNotify();
@@ -28,73 +27,73 @@ int main(int argc, char *argv[]) {
     }
 
     InclusiveCacheHierarchy inclusiveCacheHierarchy(
-        32, 8, 2048, &lru,     // L2: 32B block size, 8-way, 2048 sets, LRU, 512 kB
-        32, 24, 2048, &quadage // L3: 32B block size, 24-way, 2048 sets, Quadage, 1.5 MB
+        32, 8, 2048, new LRU(), // L2: 32B block size, 8-way, 2048 sets, LRU, 512 kB
+        32, 24, 2048, &quadage  // L3: 32B block size, 24-way, 2048 sets, Quadage, 1.5 MB
     );
 
     ExclusiveCacheHierarchy exclusiveCacheHierarchy(
-        32, 8, 2048, &lru,     // L2: 32B block size, 8-way, 2048 sets, LRU, 512 kB
-        32, 24, 2048, &quadage // L3: 32B block size, 24-way, 2048 sets, Quadage, 1.5 MB
+        32, 8, 2048, new LRU(), // L2: 32B block size, 8-way, 2048 sets, LRU, 512 kB
+        32, 24, 2048, &quadage  // L3: 32B block size, 24-way, 2048 sets, Quadage, 1.5 MB
     );
 
     ExclusiveV2CacheHierarchy exclusiveV2CacheHierarchy(
-        32, 8, 2048, &lru,       // L2: 32B block size, 8-way, 2048 sets, LRU, 512 kB
+        32, 8, 2048, new LRU(),  // L2: 32B block size, 8-way, 2048 sets, LRU, 512 kB
         32, 24, 2048, &quadageV2 // L3: 32B block size, 24-way, 2048 sets, Quadage, 1.5 MB
     );
 
     NineCacheHierarchy nineCacheHierarchy(
-        32, 8, 2048, &lru,     // L2: 32B block size, 8-way, 2048 sets, LRU, 512 kB
-        32, 24, 2048, &quadage // L3: 32B block size, 24-way, 2048 sets, Quadage, 1.5 MB
+        32, 8, 2048, new LRU(), // L2: 32B block size, 8-way, 2048 sets, LRU, 512 kB
+        32, 24, 2048, &quadage  // L3: 32B block size, 24-way, 2048 sets, Quadage, 1.5 MB
     );
 
     InclusiveNotifyCacheHierarchy inclusiveNotifyCacheHierarchy(
-        32, 8, 2048, &lru,           // L2: 32B block size, 8-way, 2048 sets, LRU, 512 kB
+        32, 8, 2048, new LRU(),      // L2: 32B block size, 8-way, 2048 sets, LRU, 512 kB
         32, 24, 2048, &quadageNotify // L3: 32B block size, 24-way, 2048 sets, QuadageNotify, 1.5 MB
     );
 
     InclusiveCacheHierarchy fullyAssociativeL3(
-        32, 8, 2048, &lru,         // L2: 32B block size, 8-way, 2048 sets, LRU, 512 kB
+        32, 8, 2048, new LRU(),    // L2: 32B block size, 8-way, 2048 sets, LRU, 512 kB
         32, 2048 * 24, 1, &quadage // L3: 32B block size, fully associate, 1.5 MB
     );
 
     OptPolicyCache optPolicyCache(
-        32, 8, 2048, &lru,       // L2: 32B block size, 8-way, 2048 sets, LRU, 512 kB
+        32, 8, 2048, new LRU(),  // L2: 32B block size, 8-way, 2048 sets, LRU, 512 kB
         32, 24, 2048, &optPolicy // L3: 32B block size, 24-way, 2048 sets, OPT, 1.5 MB
     );
 
     OptPolicyCache fullyAssocOptPolicyCache(
-        32, 8, 2048, &lru,                     // L2: 32B block size, 8-way, 2048 sets, LRU, 512 kB
+        32, 8, 2048, new LRU(),                // L2: 32B block size, 8-way, 2048 sets, LRU, 512 kB
         32, 24 * 2048, 1, &fullyAssocOptPolicy // L3: 32B block size, fully associative, OPT, 1.5 MB
     );
 
     Prefetcher addressStridePrefetcher = Prefetcher(32);
-    PrefetchCacheHierarchy pagePrefetchCacheHierarchy(32, 8, 2048, &lru, 32, 24, 2048, &quadage,
-                                                      &addressStridePrefetcher);
+    PrefetchCacheHierarchy pagePrefetchCacheHierarchy(32, 8, 2048, new LRU(), 32, 24, 2048,
+                                                      &quadage, &addressStridePrefetcher);
 
     Prefetcher pcStridePrefetcher = Prefetcher(32);
-    PrefetchCacheHierarchy pcPrefetchCacheHierarchy(32, 8, 2048, &lru, 32, 24, 2048, &quadage,
+    PrefetchCacheHierarchy pcPrefetchCacheHierarchy(32, 8, 2048, new LRU(), 32, 24, 2048, &quadage,
                                                     &pcStridePrefetcher);
-
-    FILE *fp = fopen(argv[1], "rb");
-    if (!fp) {
-        std::cerr << "Error opening trace file: " << argv[1] << std::endl;
-        return 1;
-    }
-
-    int numtraces = atoi(argv[2]);
-    char i_or_d;
-    char type;
-    uint64_t addr;
-    unsigned pc;
 
     std::vector<std::pair<uint64_t, uint64_t>> addresses;
 
+    FILE *fp;
+    char input_name[256];
+    int numtraces = atoi(argv[2]);
+    char i_or_d;
+    char type;
+    unsigned long long addr;
+    unsigned pc;
     for (int k = 0; k < numtraces; k++) {
+        sprintf(input_name, "%s_%d", argv[1], k);
+        fp = fopen(input_name, "rb");
+        assert(fp != NULL);
+
         while (!feof(fp)) {
             fread(&i_or_d, sizeof(char), 1, fp);
             fread(&type, sizeof(char), 1, fp);
             fread(&addr, sizeof(unsigned long long), 1, fp);
             fread(&pc, sizeof(unsigned), 1, fp);
+
             if (type == 0)
                 continue;
 
@@ -104,33 +103,33 @@ int main(int argc, char *argv[]) {
             optPolicyCache.loadFutureAccesses()[addr / 32].push(currentTime);
             currentTime++;
         }
-        for (auto &entry : optPolicyCache.loadFutureAccesses()) {
-            entry.second.push(currentTime);
-            currentTime++;
-        }
-        for (auto &entry : fullyAssocOptPolicyCache.loadFutureAccesses()) {
-            entry.second.push(currentTime);
-            currentTime++;
-        }
-        currentTime = 0;
-        fseek(fp, 0, SEEK_SET);
         fclose(fp);
+        printf("Done reading file %d!\n", k);
     }
+
+    for (auto &entry : optPolicyCache.loadFutureAccesses()) {
+        entry.second.push(currentTime);
+        currentTime++;
+    }
+    for (auto &entry : fullyAssocOptPolicyCache.loadFutureAccesses()) {
+        entry.second.push(currentTime);
+        currentTime++;
+    }
+    currentTime = 0;
 
     for (auto &[addr, pc] : addresses) {
         currentTime++;
 
+        fullyAssocOptPolicyCache.access(addr);
+        optPolicyCache.access(addr);
+        inclusiveCacheHierarchy.access(addr);
+        exclusiveCacheHierarchy.access(addr);
+        exclusiveV2CacheHierarchy.access(addr);
+        nineCacheHierarchy.access(addr);
+        inclusiveNotifyCacheHierarchy.access(addr);
+        fullyAssociativeL3.access(addr);
         pagePrefetchCacheHierarchy.access(addr, addr / 4096);
         pcPrefetchCacheHierarchy.access(addr, pc);
-
-        // fullyAssocOptPolicyCache.access(addr);
-        // optPolicyCache.access(addr);
-        // inclusiveCacheHierarchy.access(addr);
-        // exclusiveCacheHierarchy.access(addr);
-        // exclusiveV2CacheHierarchy.access(addr);
-        // nineCacheHierarchy.access(addr);
-        // inclusiveNotifyCacheHierarchy.access(addr);
-        // fullyAssociativeL3.access(addr);
     }
 
     printf("\n%-18s | %-12s | %-12s\n", "Cache Type", "L3 Misses", "L2 Misses");

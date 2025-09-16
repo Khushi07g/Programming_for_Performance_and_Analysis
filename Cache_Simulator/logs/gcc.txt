@@ -1,0 +1,20 @@
+Done reading file 0!
+Done reading file 1!
+
+Cache Type         | L3 Misses    | L2 Misses   
+-------------------+--------------+--------------
+Inclusive          | 1445036      | 2645481     
+NINE               | 1430261      | 2632694     
+Exclusive          | 1263391      | 2632694     
+Inclusive Notify   | 1438853      | 2639720     
+Exclusive V2       | 1252122      | 2632694     
+-------------------------------------------------
+Cold: 935704, Capacity: 94996, Conflict (quad-age L3): 414336, Conflict (OPT L3): 45317
+Cold: 935704, Capacity: 449307, Conflict (quad-age L3): 60025, Conflict (OPT L3): -308994
+-------------------------------------------------
+Page Prefetcher: L3 Misses: 1221870, L2 Misses: 2336568, L2 Accuracy: 0.84, L2 Coverage: 0.13, L3 Coverage 0.02
+PC Prefetcher: L3 Misses: 1262662, L2 Misses: 2391198, L2 Accuracy: 0.88, L2 Coverage: 0.10, L3 Coverage 0.02
+
+real	12m21.237s
+user	11m48.436s
+sys	0m1.157s

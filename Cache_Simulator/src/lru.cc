@@ -5,11 +5,11 @@ void LRU::invalidate(BaseReplacementData *replacementData) {
 }
 
 void LRU::insert(BaseReplacementData *replacementData) {
-    static_cast<LRUData *>(replacementData)->lastAccessTime = currentTime;
+    static_cast<LRUData *>(replacementData)->lastAccessTime = ++timer;
 }
 
 void LRU::access(BaseReplacementData *replacementData) {
-    static_cast<LRUData *>(replacementData)->lastAccessTime = currentTime;
+    static_cast<LRUData *>(replacementData)->lastAccessTime = ++timer;
 }
 
 CacheEntry *LRU::getVictim(std::vector<CacheEntry> &candidates) {

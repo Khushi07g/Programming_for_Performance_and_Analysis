@@ -1,5 +1,4 @@
 #include "cache_hierarchy.h"
-#include <iostream>
 
 void InclusiveCacheHierarchy::access(uint64_t address) {
     if (l2.access(address)) {
@@ -106,9 +105,9 @@ void InclusiveNotifyCacheHierarchy::access(uint64_t address) {
 }
 
 void OptPolicyCache::access(uint64_t address) {
-   if (l2.access(address)) {
+    if (l2.access(address)) {
         l3.access(address); // to update OPT state in L3
-        return; // L2 hit
+        return;             // L2 hit
     }
 
     if (l3.access(address)) {
@@ -122,12 +121,12 @@ void OptPolicyCache::access(uint64_t address) {
             (victim.getTag() * l3.getNumSets() + victim.getSet()) * l3.getBlockSize();
         l2.evict(victimAddress);
     }
-    l2.insert(address); 
+    l2.insert(address);
 }
 
 void PrefetchCacheHierarchy::prefetch(uint64_t address) {
     auto [prefetch, prefetchBlkAddress] = prefetcher->getPrefetch(address);
-    if (!prefetch)
+    if (!prefetch || 32 * prefetchBlkAddress / 4096 != address / 4096)
         return;
 
     uint64_t prefetchAddress = prefetchBlkAddress * l2.getBlockSize();

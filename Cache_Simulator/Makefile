@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -Wall -Wextra -std=c++17 -g -D AMOGH
+CXXFLAGS = -Wall -Wextra -std=c++17 -g
 SRC_DIR = src
 SRC = $(wildcard $(SRC_DIR)/*.cc)
 OBJDIR = obj

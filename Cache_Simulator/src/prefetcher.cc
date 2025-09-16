@@ -40,10 +40,8 @@ std::pair<bool, uint64_t> Prefetcher::getPrefetch(uint64_t address) {
         if (table[i].blkAddress + table[i].stride == blkAddress) {
             table[i].blkAddress = blkAddress;
             table[i].lastAccessTime = currentTime;
-            if (32 * (blkAddress + table[i].stride) / 4096 == address / 4096) {
-                prefetch = true;
-                nextAddress = blkAddress + table[i].stride;
-            }
+            prefetch = true;
+            nextAddress = blkAddress + table[i].stride;
             break;
         }
 
